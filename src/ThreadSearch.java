@@ -9,14 +9,20 @@ public class ThreadSearch extends Thread {
 	
 	// Variáveis privadas da classe
 	private final String pasta;
+	private final long tamanho;
 	private final String arquivo;
+	private final String extensao;
 	private final String threadName = Thread.currentThread().getName();
 
 	// Construtor da classe que também realiza o start da thread e o join na main
 	public ThreadSearch(String pasta,
-						String arquivo) {
+						String arquivo,
+						long tamanho,
+						String extensao) {
 		this.arquivo = arquivo;
 		this.pasta = pasta;
+		this.tamanho = tamanho;
+		this.extensao = extensao;
 		
 		start();
 		
@@ -28,8 +34,7 @@ public class ThreadSearch extends Thread {
 	}
 	
 	// Função de busca
-	public void busca(String arquivo,
-					  String pasta) {
+	public void busca() {
 		// Faz o parse do Path que o arquivo via ser buscado
 		Path currentRelativePath = Paths.get(pasta);
 		// Transforma o path em um arquivo para que possa ser manipulado
@@ -40,7 +45,7 @@ public class ThreadSearch extends Thread {
 			// Parametros de aceitacao
 			@Override
 			public boolean accept(File dir, String name) {
-				return name.startsWith(arquivo);
+				return (name.contains(arquivo) || dir.length() == tamanho || name.endsWith(extensao));
 			}
 		});
 		
@@ -58,7 +63,7 @@ public class ThreadSearch extends Thread {
 				});
 				// Faz uma chamada recursiva onde a classe se instancia para cada diretorio dentro do path em que estamos
 				for(File oneDir : dirFound) {
-					new ThreadSearch(oneDir.getAbsolutePath(), arquivo);
+					new ThreadSearch(oneDir.getAbsolutePath(), arquivo, tamanho, extensao);
 				}
 			}catch(Exception e) {
 				System.out.println("Arquivo não encontrado");
@@ -85,7 +90,7 @@ public class ThreadSearch extends Thread {
 	}
 	@Override
 	public void run() {
-		busca(arquivo, pasta); 
+		busca(); 
 		super.run();
 	}
 }
